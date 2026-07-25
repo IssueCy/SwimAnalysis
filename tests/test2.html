@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwimAnalysis | Home</title>
+    <link rel="stylesheet" href="css/mainStyles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:wght@100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!DOCTYPE html>
+    <html lang="de">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Schwimmzeiten Analyse – Testentwurf</title>
+        <style>
+            :root {
+                --bg: #bdbdbd;
+                --panel: #e6e6e6;
+                --panel-2: #f2f2f2;
+                --text: #111111;
+                --muted: #555555;
+                --border-dark: #7a7a7a;
+                --border-light: #ffffff;
+                --border-mid: #9b9b9b;
+                --table-head: #d3d3d3;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                line-height: 1.35;
+                font-size: 14px;
+            }
+
+            .wrap {
+                max-width: 760px;
+                margin: 0 auto;
+                padding: 16px;
+            }
+
+            .screen {
+                display: none;
+            }
+
+            .screen.active {
+                display: block;
+            }
+
+            .window {
+                background: var(--panel);
+                border-top: 2px solid var(--border-light);
+                border-left: 2px solid var(--border-light);
+                border-right: 2px solid var(--border-dark);
+                border-bottom: 2px solid var(--border-dark);
+                padding: 14px;
+                margin-bottom: 16px;
+            }
+
+            .titlebar {
+                background: linear-gradient(#d9d9d9, #c9c9c9);
+                border: 1px solid var(--border-dark);
+                padding: 8px 10px;
+                font-weight: bold;
+                margin: -14px -14px 14px -14px;
+            }
+
+            h1,
+            h2,
+            h3 {
+                margin: 0 0 10px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+            p {
+                margin: 0 0 10px;
+            }
+
+            .muted {
+                color: var(--muted);
+            }
+
+            label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 4px;
+            }
+
+            select,
+            input {
+                width: 100%;
+                padding: 8px 9px;
+                font-size: 14px;
+                border-top: 2px solid var(--border-dark);
+                border-left: 2px solid var(--border-dark);
+                border-right: 2px solid var(--border-light);
+                border-bottom: 2px solid var(--border-light);
+                background: #ffffff;
+                color: var(--text);
+                border-radius: 0;
+                outline: none;
+            }
+
+            input::placeholder {
+                color: #888;
+            }
+
+            .field {
+                margin-bottom: 12px;
+            }
+
+            .row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .btn {
+                display: inline-block;
+                width: 100%;
+                padding: 8px 12px;
+                border-radius: 0;
+                border-top: 2px solid var(--border-light);
+                border-left: 2px solid var(--border-light);
+                border-right: 2px solid var(--border-dark);
+                border-bottom: 2px solid var(--border-dark);
+                background: #d9d9d9;
+                color: var(--text);
+                font-size: 14px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            .btn:active {
+                border-top: 2px solid var(--border-dark);
+                border-left: 2px solid var(--border-dark);
+                border-right: 2px solid var(--border-light);
+                border-bottom: 2px solid var(--border-light);
+            }
+
+            .divider {
+                height: 1px;
+                background: var(--border-mid);
+                margin: 14px 0;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #fff;
+                margin-top: 8px;
+            }
+
+            th,
+            td {
+                border: 1px solid #8b8b8b;
+                padding: 7px 8px;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            th {
+                background: var(--table-head);
+                font-weight: bold;
+            }
+
+            .table-wrap {
+                overflow-x: auto;
+            }
+
+            .status {
+                font-weight: bold;
+            }
+
+            .status-good {
+                color: #111;
+            }
+
+            .status-bad {
+                color: #111;
+            }
+
+            .small-note {
+                font-size: 12px;
+                color: var(--muted);
+                margin-top: 6px;
+            }
+
+            .section-title {
+                font-weight: bold;
+                margin: 0 0 6px;
+                font-size: 14px;
+            }
+
+            .stack {
+                display: grid;
+                gap: 12px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="wrap">
+            <!-- STARTSEITE -->
+            <section id="screen-start" class="screen active">
+                <div class="window">
+                    <div class="titlebar">AquaticAnalysis</div>
+                    <p class="muted">testversion v. 2.0</p>
+
+                    <div class="field">
+                        <label for="eventSelect">Event</label>
+                        <select id="eventSelect"></select>
+                    </div>
+
+                    <button class="btn" id="startBtn">Continue</button>
+                </div>
+            </section>
+
+            <!-- EINGABE -->
+            <section id="screen-input" class="screen">
+                <div class="window">
+                    <div class="titlebar">Enter data</div>
+                    <h2 id="eventTitle">Submit</h2>
+                    <p class="muted" id="eventMeta"></p>
+
+                    <form id="splitForm"></form>
+
+                    <div class="row">
+                        <button type="button" class="btn" id="backBtn">Back</button>
+                        <button type="submit" form="splitForm" class="btn">Analyse</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ERGEBNISSE -->
+            <section id="screen-result" class="screen">
+                <div class="window">
+                    <div class="titlebar">Results</div>
+                    <h2 id="nameFieldLabel">Swimmer: </h2>
+                    <p class="muted" id="resultMeta"></p>
+
+                    <div id="resultSummary"></div>
+
+                    <div class="divider"></div>
+
+                    <div class="stack">
+                        <div>
+                            <div class="section-title">Splits</div>
+                            <div class="table-wrap">
+                                <table id="sectionTable"></table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="section-title">Overall data</div>
+                            <div class="table-wrap">
+                                <table id="summaryTable"></table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="section-title">Raw data</div>
+                            <div class="table-wrap">
+                                <table id="rawTable"></table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn" id="restartBtn" style="margin-top:14px;">New analysis</button>
+                </div>
+            </section>
+        </div>
+
+        <script>
+            // ------------------------------------------------------------
+            // TEMPLATES
+            // ------------------------------------------------------------
+            const EVENT_TEMPLATES = {
+                // Butterfly
+                "50B": {
+                    id: "50B",
+                    name: "50m Butterfly",
+                    checkpoints: [15, 25, 35, 50],
+                    description: "Input at 15 m, 25 m, 35 m and 50 m."
+                },
+                "100B": {
+                    id: "100B",
+                    name: "100m Butterfly",
+                    checkpoints: [15, 50, 100],
+                    description: "Input at 15 m, 50 m and 100 m."
+                },
+                "200B": {
+                    id: "200B",
+                    name: "200m Butterfly",
+                    checkpoints: [15, 50, 100, 150, 200],
+                    description: "Input at 15 m, 50 m, 100 m, 150 m and 200 m."
+                },
+
+                // Backstroke
+                "50BK": {
+                    id: "50BK",
+                    name: "50m Backstroke",
+                    checkpoints: [15, 25, 35, 50],
+                    description: "Input at 15 m, 25 m, 35 m and 50 m."
+                },
+                "100BK": {
+                    id: "100BK",
+                    name: "100m Backstroke",
+                    checkpoints: [15, 50, 100],
+                    description: "Input at 15 m, 50 m and 100 m."
+                },
+                "200BK": {
+                    id: "200BK",
+                    name: "200m Backstroke",
+                    checkpoints: [15, 50, 100, 150, 200],
+                    description: "Input at 15 m, 50 m, 100 m, 150 m and 200 m."
+                },
+
+                // Breaststroke
+                "50BR": {
+                    id: "50BR",
+                    name: "50m Breaststroke",
+                    checkpoints: [15, 25, 35, 50],
+                    description: "Input at 15 m, 25 m, 35 m and 50 m."
+                },
+                "100BR": {
+                    id: "100BR",
+                    name: "100m Breaststroke",
+                    checkpoints: [15, 50, 100],
+                    description: "Input at 15 m, 50 m and 100 m."
+                },
+                "200BR": {
+                    id: "200BR",
+                    name: "200m Breaststroke",
+                    checkpoints: [15, 50, 100, 150, 200],
+                    description: "Input at 15 m, 50 m, 100 m, 150 m and 200 m."
+                },
+
+                // Freestyle
+                "50F": {
+                    id: "50F",
+                    name: "50m Freestyle",
+                    checkpoints: [15, 25, 35, 50],
+                    description: "Input at 15 m, 25 m, 35 m and 50 m."
+                },
+                "100F": {
+                    id: "100F",
+                    name: "100m Freestyle",
+                    checkpoints: [15, 50, 100],
+                    description: "Input at 15 m, 50 m and 100 m."
+                },
+                "200F": {
+                    id: "200F",
+                    name: "200m Freestyle",
+                    checkpoints: [15, 50, 100, 150, 200],
+                    description: "Input at 15 m, 50 m, 100 m, 150 m and 200 m."
+                },
+                "400F": {
+                    id: "400F",
+                    name: "400m Freestyle",
+                    checkpoints: [50, 100, 150, 200, 250, 300, 350, 400],
+                    description: "Input at every 50 m split."
+                },
+                "800F": {
+                    id: "800F",
+                    name: "800m Freestyle",
+                    checkpoints: [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800],
+                    description: "Input at every 50 m split."
+                },
+                "1500F": {
+                    id: "1500F",
+                    name: "1500m Freestyle",
+                    checkpoints: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500],
+                    description: "Input at every 100 m split."
+                },
+
+                // Individual Medley
+                "100IM": {
+                    id: "100IM",
+                    name: "100m IM",
+                    checkpoints: [15, 25, 50, 75, 100],
+                    description: "Input at 15 m, 25 m, 50 m, 75 m and 100 m."
+                },
+                "200IM": {
+                    id: "200IM",
+                    name: "200m IM",
+                    checkpoints: [15, 50, 100, 150, 200],
+                    description: "Input at 15 m, 50 m, 100 m, 150 m and 200 m."
+                }
+            };
+
+
+            // ------------------------------------------------------------
+            // STATE
+            // ------------------------------------------------------------
+            let selectedEventId = "50F";
+            let currentTemplate = EVENT_TEMPLATES[selectedEventId];
+
+            const eventSelect = document.getElementById("eventSelect");
+            const startBtn = document.getElementById("startBtn");
+            const backBtn = document.getElementById("backBtn");
+            const restartBtn = document.getElementById("restartBtn");
+            const splitForm = document.getElementById("splitForm");
+
+            const screenStart = document.getElementById("screen-start");
+            const screenInput = document.getElementById("screen-input");
+            const screenResult = document.getElementById("screen-result");
+
+            // ------------------------------------------------------------
+            // HELPER
+            // ------------------------------------------------------------
+            function showScreen(screenName) {
+                [screenStart, screenInput, screenResult].forEach(el => el.classList.remove("active"));
+                if (screenName === "start") screenStart.classList.add("active");
+                if (screenName === "input") screenInput.classList.add("active");
+                if (screenName === "result") screenResult.classList.add("active");
+            }
+
+            function formatTime(seconds) {
+                if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return "-";
+                return `${seconds.toFixed(2)} s`;
+            }
+
+            function formatSpeed(speed) {
+                if (speed === null || speed === undefined || Number.isNaN(speed)) return "-";
+                return `${speed.toFixed(2)} m/s`;
+            }
+
+            function calcSectionTimes(checkpoints, cumulativeTimes) {
+                return checkpoints.map((checkpoint, index) => {
+                    const currentTime = cumulativeTimes[index];
+                    const previousTime = index === 0 ? 0 : cumulativeTimes[index - 1];
+                    const sectionDistance = index === 0 ? checkpoint : checkpoint - checkpoints[index - 1];
+                    const sectionTime = currentTime - previousTime;
+                    const sectionSpeed = sectionDistance / sectionTime;
+
+                    return {
+                        label: index === 0 ? `0-${checkpoint} m` : `${checkpoints[index - 1]}-${checkpoint} m`,
+                        distance: sectionDistance,
+                        time: sectionTime,
+                        speed: sectionSpeed
+                    };
+                });
+            }
+
+            function calcAverageSpeed(totalDistance, totalTime) {
+                return totalDistance / totalTime;
+            }
+
+            function calcSpeedLossPercent(startSpeed, laterSpeed) {
+                return ((startSpeed - laterSpeed) / startSpeed) * 100;
+            }
+
+            function sectionComparisonText(speedLossPercent) {
+                if (speedLossPercent > 10) return "deutlicher Einbruch";
+                if (speedLossPercent > 5) return "merklicher Einbruch";
+                return "relativ konstant";
+            }
+
+            // ------------------------------------------------------------
+            // STARTING SITE
+            // ------------------------------------------------------------
+            function initEventSelect() {
+                eventSelect.innerHTML = "";
+
+                Object.values(EVENT_TEMPLATES).forEach(template => {
+                    const option = document.createElement("option");
+                    option.value = template.id;
+                    option.textContent = template.name;
+                    eventSelect.appendChild(option);
+                });
+
+                eventSelect.value = selectedEventId;
+            }
+
+            // ------------------------------------------------------------
+            // DYNAMIC FORMULAR
+            // ------------------------------------------------------------
+            function renderInputForm(template) {
+                document.getElementById("eventTitle").textContent = template.name;
+                document.getElementById("eventMeta").textContent = template.description;
+
+                splitForm.innerHTML = "";
+
+                const intro = document.createElement("p");
+                intro.className = "muted";
+                intro.textContent = "Enter cumulative data";
+                splitForm.appendChild(intro);
+
+                function getTodayForDateInput() {
+                    const d = new Date();
+                    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+                    return local.toISOString().slice(0, 10);
+                }
+
+                const swimmerField = document.createElement("div");
+                swimmerField.className = "field";
+
+                const swimmerLabel = document.createElement("label");
+                swimmerLabel.setAttribute("for", "swimmerName");
+                swimmerLabel.textContent = "Swimmer name";
+
+                const nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.id = "swimmerName";
+                nameInput.name = "swimmerName";
+                nameInput.placeholder = "Last name, first name";
+
+                swimmerField.appendChild(swimmerLabel);
+                swimmerField.appendChild(nameInput);
+                splitForm.appendChild(swimmerField);
+
+                const dateField = document.createElement("div");
+                dateField.className = "field";
+
+                const dateLabel = document.createElement("label");
+                dateLabel.setAttribute("for", "raceDate");
+                dateLabel.textContent = "Date";
+
+                const dateRow = document.createElement("div");
+                dateRow.style.display = "grid";
+                dateRow.style.gridTemplateColumns = "1fr auto";
+                dateRow.style.gap = "8px";
+
+                const dateInput = document.createElement("input");
+                dateInput.type = "date";
+                dateInput.id = "raceDate";
+                dateInput.name = "raceDate";
+
+                const todayBtn = document.createElement("button");
+                todayBtn.type = "button";
+                todayBtn.className = "btn";
+                todayBtn.style.width = "auto";
+                todayBtn.textContent = "Today";
+                todayBtn.addEventListener("click", () => {
+                    dateInput.value = getTodayForDateInput();
+                });
+
+                dateRow.appendChild(dateInput);
+                dateRow.appendChild(todayBtn);
+
+                dateField.appendChild(dateLabel);
+                dateField.appendChild(dateRow);
+                splitForm.appendChild(dateField);
+
+                template.checkpoints.forEach((checkpoint) => {
+                    const field = document.createElement("div");
+                    field.className = "field";
+
+                    const label = document.createElement("label");
+                    label.setAttribute("for", `cp_${checkpoint}`);
+                    label.textContent = `Time at ${checkpoint} m`;
+
+                    const input = document.createElement("input");
+                    input.type = "number";
+                    input.step = "0.01";
+                    input.min = "0";
+                    input.id = `cp_${checkpoint}`;
+                    input.name = `cp_${checkpoint}`;
+                    input.placeholder = "e.g. 6.20";
+                    input.required = true;
+
+                    field.appendChild(label);
+                    field.appendChild(input);
+                    splitForm.appendChild(field);
+                });
+
+                const strokeField = document.createElement("div");
+                strokeField.className = "field";
+
+                const strokeLabel = document.createElement("label");
+                strokeLabel.setAttribute("for", "strokeCount");
+                strokeLabel.textContent = "Stroke count (optional)";
+
+                const strokeInput = document.createElement("input");
+                strokeInput.type = "text";
+                strokeInput.id = "strokeCount";
+                strokeInput.name = "strokeCount";
+                strokeInput.placeholder = "optional";
+
+                strokeField.appendChild(strokeLabel);
+                strokeField.appendChild(strokeInput);
+                splitForm.appendChild(strokeField);
+            }
+
+            // ------------------------------------------------------------
+            // ANALYSIS
+            // ------------------------------------------------------------
+            function analyzeRace(template, formData) {
+                const cumulativeTimes = template.checkpoints.map(cp => Number(formData.get(`cp_${cp}`)));
+                const strokeCountRaw = formData.get("strokeCount");
+                const strokeCount = strokeCountRaw === null || strokeCountRaw === "" ? null : Number(strokeCountRaw);
+
+                if (cumulativeTimes.some(v => Number.isNaN(v) || v <= 0)) {
+                    throw new Error("All data has to be correct and over 0");
+                }
+
+                for (let i = 1; i < cumulativeTimes.length; i++) {
+                    if (cumulativeTimes[i] <= cumulativeTimes[i - 1]) {
+                        throw new Error("Times need to continue increasing");
+                    }
+                }
+
+                if (strokeCount !== null && (Number.isNaN(strokeCount) || strokeCount < 0)) {
+                    throw new Error("Enter valid stroke count or leave blank");
+                }
+
+                const totalDistance = template.checkpoints[template.checkpoints.length - 1];
+                const totalTime = cumulativeTimes[cumulativeTimes.length - 1];
+                const avgSpeed = calcAverageSpeed(totalDistance, totalTime);
+                const sections = calcSectionTimes(template.checkpoints, cumulativeTimes);
+                const sectionSpeeds = sections.map(s => s.speed);
+                const startSpeed = sectionSpeeds[0];
+                const lastSpeed = sectionSpeeds[sectionSpeeds.length - 1];
+                const speedLossPercent = calcSpeedLossPercent(startSpeed, lastSpeed);
+                const fastestSection = sections.reduce((best, current) => current.speed > best.speed ? current : best, sections[0]);
+                const slowestSection = sections.reduce((worst, current) => current.speed < worst.speed ? current : worst, sections[0]);
+
+                return {
+                    totalDistance,
+                    totalTime,
+                    avgSpeed,
+                    sections,
+                    cumulativeTimes,
+                    strokeCount,
+                    startSpeed,
+                    lastSpeed,
+                    speedLossPercent,
+                    fastestSection,
+                    slowestSection
+                };
+            }
+
+            // ------------------------------------------------------------
+            // CREATE TABLES
+            // ------------------------------------------------------------
+            function buildTable(headers, rows) {
+                const thead = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`;
+                const tbody = rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("");
+                return `${thead}${tbody}`;
+            }
+
+            // ------------------------------------------------------------
+            // SHOW RESULTS
+            // ------------------------------------------------------------
+            function renderResults(template, result) {
+                document.getElementById("resultMeta").textContent = `${template.name} – Analysis based on entered data.`;
+
+                const summaryText = sectionComparisonText(result.speedLossPercent);
+                document.getElementById("resultSummary").innerHTML = `
+            <div class="table-wrap">
+              <table>
+                <tr><th colspan="2">Short overview</th></tr>
+                <tr><td>End time</td><td>${formatTime(result.totalTime)}</td></tr>
+                <tr><td>v avg.</td><td>${formatSpeed(result.avgSpeed)}</td></tr>
+                <tr><td>v first seg.</td><td>${formatSpeed(result.startSpeed)}</td></tr>
+                <tr><td>v last seg.</td><td>${formatSpeed(result.lastSpeed)}</td></tr>
+                <tr><td>Speed loss</td><td>${result.speedLossPercent.toFixed(2)} %</td></tr>
+                <tr><td>Evaluation</td><td>${summaryText}</td></tr>
+              </table>
+            </div>
+          `;
+
+                const sectionRows = result.sections.map(section => [
+                    section.label,
+                    `${section.distance.toFixed(0)} m`,
+                    formatTime(section.time),
+                    formatSpeed(section.speed)
+                ]);
+
+                document.getElementById("sectionTable").innerHTML = buildTable(
+                    ["Segment", "Distance", "Split", "v"],
+                    sectionRows
+                );
+
+                const summaryRows = [
+                    ["Total distance", `${result.totalDistance.toFixed(0)} m`],
+                    ["End time", formatTime(result.totalTime)],
+                    ["v avg.", formatSpeed(result.avgSpeed)],
+                    ["v fastest seg.", `${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`],
+                    ["v slowest seg.", `${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`],
+                    ["Stroke count", result.strokeCount === null ? "---" : String(result.strokeCount)],
+                ];
+
+                document.getElementById("summaryTable").innerHTML = buildTable(
+                    ["Index", "Value"],
+                    summaryRows
+                );
+
+                const rawRows = template.checkpoints.map((cp, index) => [
+                    `${cp} m`,
+                    formatTime(result.cumulativeTimes[index])
+                ]);
+                rawRows.push(["Stroke count", result.strokeCount === null ? "---" : String(result.strokeCount)]);
+
+                document.getElementById("rawTable").innerHTML = buildTable(
+                    ["Eingabe", "Wert"],
+                    rawRows
+                );
+            }
+
+            // ------------------------------------------------------------
+            // EVENTS
+            // ------------------------------------------------------------
+            startBtn.addEventListener("click", () => {
+                selectedEventId = eventSelect.value;
+                currentTemplate = EVENT_TEMPLATES[selectedEventId];
+                renderInputForm(currentTemplate);
+                showScreen("input");
+            });
+
+            backBtn.addEventListener("click", () => {
+                showScreen("start");
+            });
+
+            restartBtn.addEventListener("click", () => {
+                showScreen("start");
+            });
+
+            splitForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                try {
+                    const formData = new FormData(splitForm);
+                    const analysis = analyzeRace(currentTemplate, formData);
+                    renderResults(currentTemplate, analysis);
+                    showScreen("result");
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
+
+
+
+
+            initEventSelect();
+        </script>
+    </body>
+
+    </html>
+
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schwimmzeiten Analyse – Testentwurf</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --danger: #b91c1c;
+      --success: #047857;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 12px;
+      line-height: 1.2;
+    }
+
+    p { margin: 0 0 12px; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .result-block {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+
+    .result-ok { color: var(--success); font-weight: 700; }
+    .result-warn { color: var(--danger); font-weight: 700; }
+
+    .list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .small-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- STARTSEITE -->
+    <section id="screen-start" class="screen active">
+      <div class="card">
+        <h1>Schwimmzeiten Analyse</h1>
+        <p class="muted">Testversion ohne Design-Fokus. Strecke auswählen, Zeiten eingeben, Ergebnisse berechnen.</p>
+
+        <div class="field">
+          <label for="eventSelect">Strecke auswählen</label>
+          <select id="eventSelect"></select>
+        </div>
+
+        <button class="btn btn-primary" id="startBtn">Weiter</button>
+      </div>
+    </section>
+
+    <!-- EINGABE -->
+    <section id="screen-input" class="screen">
+      <div class="card">
+        <h2 id="eventTitle">Eingabe</h2>
+        <p class="muted" id="eventMeta"></p>
+
+        <form id="splitForm"></form>
+
+        <div class="row">
+          <button type="button" class="btn btn-secondary" id="backBtn">Zurück</button>
+          <button type="submit" form="splitForm" class="btn btn-primary">Analysieren</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ERGEBNISSE -->
+    <section id="screen-result" class="screen">
+      <div class="card">
+        <h2>Ergebnis</h2>
+        <p class="muted" id="resultMeta"></p>
+
+        <div id="resultSummary"></div>
+
+        <div class="divider"></div>
+
+        <h3>Abschnitte</h3>
+        <div id="sectionResults"></div>
+
+        <div class="divider"></div>
+
+        <h3>Rohdaten</h3>
+        <div id="rawData"></div>
+
+        <button type="button" class="btn btn-secondary" id="restartBtn">Neue Analyse</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------
+    // 1) TEMPLATE-KONFIGURATION
+    // Später ergänzt du hier einfach neue Strecken.
+    // checkpoints = kumulative Zeiten, die der Nutzer eingibt.
+    // ------------------------------------------------------------
+    const EVENT_TEMPLATES = {
+      "50F": {
+        id: "50F",
+        name: "50 m Kraul",
+        checkpoints: [15, 25, 35, 50],
+        description: "Eingabe bei 15 m, 25 m, 35 m und 50 m."
+      },
+
+      "200F": {
+        id: "200F",
+        name: "200 m Kraul",
+        checkpoints: [50, 100, 150, 200],
+        description: "Eingabe bei 50 m, 100 m, 150 m und 200 m."
+      }
+    };
+
+    // ------------------------------------------------------------
+    // 2) STATE
+    // ------------------------------------------------------------
+    let selectedEventId = "50F";
+    let currentTemplate = EVENT_TEMPLATES[selectedEventId];
+
+    const eventSelect = document.getElementById("eventSelect");
+    const startBtn = document.getElementById("startBtn");
+    const backBtn = document.getElementById("backBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const splitForm = document.getElementById("splitForm");
+
+    const screenStart = document.getElementById("screen-start");
+    const screenInput = document.getElementById("screen-input");
+    const screenResult = document.getElementById("screen-result");
+
+    // ------------------------------------------------------------
+    // 3) HELFERFUNKTIONEN
+    // ------------------------------------------------------------
+    function showScreen(screenName) {
+      [screenStart, screenInput, screenResult].forEach(el => el.classList.remove("active"));
+
+      if (screenName === "start") screenStart.classList.add("active");
+      if (screenName === "input") screenInput.classList.add("active");
+      if (screenName === "result") screenResult.classList.add("active");
+    }
+
+    function formatTime(seconds) {
+      if (seconds === null || seconds === undefined || Number.isNaN(seconds)) return "-";
+      return `${seconds.toFixed(2)} s`;
+    }
+
+    function formatSpeed(speed) {
+      if (speed === null || speed === undefined || Number.isNaN(speed)) return "-";
+      return `${speed.toFixed(2)} m/s`;
+    }
+
+    function calcSectionTimes(checkpoints, cumulativeTimes) {
+      return checkpoints.map((checkpoint, index) => {
+        const currentTime = cumulativeTimes[index];
+        const previousTime = index === 0 ? 0 : cumulativeTimes[index - 1];
+        const sectionDistance = index === 0 ? checkpoint : checkpoint - checkpoints[index - 1];
+        const sectionTime = currentTime - previousTime;
+        const sectionSpeed = sectionDistance / sectionTime;
+
+        return {
+          label: index === 0 ? `0-${checkpoint} m` : `${checkpoints[index - 1]}-${checkpoint} m`,
+          distance: sectionDistance,
+          time: sectionTime,
+          speed: sectionSpeed
+        };
+      });
+    }
+
+    function calcAverageSpeed(totalDistance, totalTime) {
+      return totalDistance / totalTime;
+    }
+
+    function calcSpeedLossPercent(startSpeed, laterSpeed) {
+      return ((startSpeed - laterSpeed) / startSpeed) * 100;
+    }
+
+    // ------------------------------------------------------------
+    // 4) STARTSEITE INITIALISIEREN
+    // ------------------------------------------------------------
+    function initEventSelect() {
+      eventSelect.innerHTML = "";
+
+      Object.values(EVENT_TEMPLATES).forEach(template => {
+        const option = document.createElement("option");
+        option.value = template.id;
+        option.textContent = template.name;
+        eventSelect.appendChild(option);
+      });
+
+      eventSelect.value = selectedEventId;
+    }
+
+    // ------------------------------------------------------------
+    // 5) DYNAMISCHE FORMULARERZEUGUNG
+    // ------------------------------------------------------------
+    function renderInputForm(template) {
+      document.getElementById("eventTitle").textContent = template.name;
+      document.getElementById("eventMeta").textContent = template.description;
+
+      splitForm.innerHTML = "";
+
+      const intro = document.createElement("p");
+      intro.className = "muted";
+      intro.textContent = "Bitte kumulative Zeiten eingeben, also die Zeit bis zu jedem Checkpoint.";
+      splitForm.appendChild(intro);
+
+      template.checkpoints.forEach((checkpoint) => {
+        const field = document.createElement("div");
+        field.className = "field";
+
+        const label = document.createElement("label");
+        label.setAttribute("for", `cp_${checkpoint}`);
+        label.textContent = `Zeit bei ${checkpoint} m`;
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.step = "0.01";
+        input.min = "0";
+        input.id = `cp_${checkpoint}`;
+        input.name = `cp_${checkpoint}`;
+        input.placeholder = "X.XX s";
+        input.required = true;
+
+        field.appendChild(label);
+        field.appendChild(input);
+        splitForm.appendChild(field);
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 6) ANALYSE
+    // ------------------------------------------------------------
+    function analyzeRace(template, formData) {
+      const cumulativeTimes = template.checkpoints.map(cp => {
+        const value = Number(formData.get(`cp_${cp}`));
+        return value;
+      });
+
+      if (cumulativeTimes.some(v => Number.isNaN(v) || v <= 0)) {
+        throw new Error("Bitte alle Zeiten korrekt und größer als 0 eingeben.");
+      }
+
+      // Kumulative Zeiten müssen streng ansteigen
+      for (let i = 1; i < cumulativeTimes.length; i++) {
+        if (cumulativeTimes[i] <= cumulativeTimes[i - 1]) {
+          throw new Error("Die Zeiten müssen von Checkpoint zu Checkpoint steigen.");
+        }
+      }
+
+      const totalDistance = template.checkpoints[template.checkpoints.length - 1];
+      const totalTime = cumulativeTimes[cumulativeTimes.length - 1];
+      const avgSpeed = calcAverageSpeed(totalDistance, totalTime);
+      const sections = calcSectionTimes(template.checkpoints, cumulativeTimes);
+      const sectionSpeeds = sections.map(s => s.speed);
+      const startSpeed = sectionSpeeds[0];
+      const lastSpeed = sectionSpeeds[sectionSpeeds.length - 1];
+      const speedLossPercent = calcSpeedLossPercent(startSpeed, lastSpeed);
+
+      const fastestSection = sections.reduce((best, current) => current.speed > best.speed ? current : best, sections[0]);
+      const slowestSection = sections.reduce((worst, current) => current.speed < worst.speed ? current : worst, sections[0]);
+
+      return {
+        totalDistance,
+        totalTime,
+        avgSpeed,
+        sections,
+        cumulativeTimes,
+        startSpeed,
+        lastSpeed,
+        speedLossPercent,
+        fastestSection,
+        slowestSection
+      };
+    }
+
+    // ------------------------------------------------------------
+    // 7) ERGEBNISSE ANZEIGEN
+    // ------------------------------------------------------------
+    function renderResults(template, result) {
+      document.getElementById("resultMeta").textContent = `${template.name} – Analyse auf Basis deiner eingegebenen Checkpoints.`;
+
+      const resultSummary = document.getElementById("resultSummary");
+      resultSummary.innerHTML = `
+        <div class="result-block">
+          <div class="small-title">Gesamt</div>
+          <div><strong>Gesamtzeit:</strong> ${formatTime(result.totalTime)}</div>
+          <div><strong>Durchschnittsgeschwindigkeit:</strong> ${formatSpeed(result.avgSpeed)}</div>
+        </div>
+
+        <div class="result-block">
+          <div class="small-title">Geschwindigkeitsverlust</div>
+          <div><strong>Startgeschwindigkeit:</strong> ${formatSpeed(result.startSpeed)}</div>
+          <div><strong>Letzte Abschnittsgeschwindigkeit:</strong> ${formatSpeed(result.lastSpeed)}</div>
+          <div><strong>Prozentualer Verlust:</strong> ${result.speedLossPercent.toFixed(2)} %</div>
+        </div>
+
+        <div class="result-block">
+          <div class="small-title">Einordnung</div>
+          <div class="${result.speedLossPercent > 8 ? 'result-warn' : 'result-ok'}">
+            ${result.speedLossPercent > 8
+              ? 'Starker Einbruch zwischen Start und Ende.'
+              : 'Relativ konstanter Geschwindigkeitsverlauf.'}
+          </div>
+          <div>Fastester Abschnitt: <strong>${result.fastestSection.label}</strong> (${formatSpeed(result.fastestSection.speed)})</div>
+          <div>Langsamster Abschnitt: <strong>${result.slowestSection.label}</strong> (${formatSpeed(result.slowestSection.speed)})</div>
+        </div>
+      `;
+
+      const sectionResults = document.getElementById("sectionResults");
+      sectionResults.innerHTML = result.sections.map(section => `
+        <div class="result-block">
+          <div><strong>${section.label}</strong></div>
+          <div>Distanz: ${section.distance.toFixed(0)} m</div>
+          <div>Zeit: ${formatTime(section.time)}</div>
+          <div>Geschwindigkeit: ${formatSpeed(section.speed)}</div>
+        </div>
+      `).join("");
+
+      const rawData = document.getElementById("rawData");
+      rawData.innerHTML = `
+        <div class="result-block">
+          <div><strong>Checkpoints:</strong> [${template.checkpoints.join(", ")}]</div>
+          <div><strong>Kumulative Zeiten:</strong> [${result.cumulativeTimes.map(t => t.toFixed(2)).join(", ")}]</div>
+          <div class="muted">Hinweis: Im ersten Testentwurf werden nur einfache Werte ausgegeben, noch keine Diagramme.</div>
+        </div>
+      `;
+    }
+
+    // ------------------------------------------------------------
+    // 8) EVENT HANDLERS
+    // ------------------------------------------------------------
+    startBtn.addEventListener("click", () => {
+      selectedEventId = eventSelect.value;
+      currentTemplate = EVENT_TEMPLATES[selectedEventId];
+      renderInputForm(currentTemplate);
+      showScreen("input");
+    });
+
+    backBtn.addEventListener("click", () => {
+      showScreen("start");
+    });
+
+    restartBtn.addEventListener("click", () => {
+      showScreen("start");
+    });
+
+    splitForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      try {
+        const formData = new FormData(splitForm);
+        const analysis = analyzeRace(currentTemplate, formData);
+        renderResults(currentTemplate, analysis);
+        showScreen("result");
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // ------------------------------------------------------------
+    // 9) START
+    // ------------------------------------------------------------
+    initEventSelect();
+  </script>
+</body>
+</html>

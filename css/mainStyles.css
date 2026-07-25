@@ -1,0 +1,202 @@
+:root {
+    --bg: #bdbdbd;
+    --panel: #e6e6e6;
+    --panel-2: #f2f2f2;
+    --text: #111111;
+    --muted: #555555;
+    --border-dark: #7a7a7a;
+    --border-light: #ffffff;
+    --border-mid: #9b9b9b;
+    --table-head: #d3d3d3;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.35;
+    font-size: 14px;
+}
+
+.wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.window {
+    background: var(--panel);
+    border-top: 2px solid var(--border-light);
+    border-left: 2px solid var(--border-light);
+    border-right: 2px solid var(--border-dark);
+    border-bottom: 2px solid var(--border-dark);
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.titlebar {
+    background: linear-gradient(#d9d9d9, #c9c9c9);
+    border: 1px solid var(--border-dark);
+    padding: 8px 10px;
+    font-weight: bold;
+    margin: -14px -14px 14px -14px;
+}
+
+h1,
+h2,
+h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+p {
+    margin: 0 0 10px;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+select,
+input {
+    width: 100%;
+    padding: 8px 9px;
+    font-size: 14px;
+    border-top: 2px solid var(--border-dark);
+    border-left: 2px solid var(--border-dark);
+    border-right: 2px solid var(--border-light);
+    border-bottom: 2px solid var(--border-light);
+    background: #ffffff;
+    color: var(--text);
+    border-radius: 0;
+    outline: none;
+}
+
+input::placeholder {
+    color: #888;
+}
+
+.field {
+    margin-bottom: 12px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 0;
+    border-top: 2px solid var(--border-light);
+    border-left: 2px solid var(--border-light);
+    border-right: 2px solid var(--border-dark);
+    border-bottom: 2px solid var(--border-dark);
+    background: #d9d9d9;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn:active {
+    border-top: 2px solid var(--border-dark);
+    border-left: 2px solid var(--border-dark);
+    border-right: 2px solid var(--border-light);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.divider {
+    height: 1px;
+    background: var(--border-mid);
+    margin: 14px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin-top: 8px;
+}
+
+th,
+td {
+    border: 1px solid #8b8b8b;
+    padding: 7px 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: var(--table-head);
+    font-weight: bold;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.status {
+    font-weight: bold;
+}
+
+.status-good {
+    color: #111;
+}
+
+.status-bad {
+    color: #111;
+}
+
+.small-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+.section-title {
+    font-weight: bold;
+    margin: 0 0 6px;
+    font-size: 14px;
+}
+
+.stack {
+    display: grid;
+    gap: 12px;
+}
+
+/* --- */
+.footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.simtecLogo {
+    width: 32px;
+}

@@ -1,11 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>SwimAnalysis | Home</title>
+    <link rel="stylesheet" href="css/mainStyles.css">
+    <link rel="icon" href="assets/1570889.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:wght@100..900&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    
+    <div class="wrap">
+        <!-- Home -->
+        <section id="screen-start" class="screen active">
+            <div class="window">
+                <div class="titlebar">RaceAnalysis</div>
+                <p class="muted">v. 1.0 Alpha</p>
+
+                <div class="field">
+                    <label for="eventSelect">Event</label>
+                    <select id="eventSelect"></select>
+                </div>
+
+                <button class="btn" id="startBtn">Continue</button>
+            </div>
+            <div class="util-links">
+                <a href="https://www.dsv.de/de/leistungs--und-wettkampfsport/schwimmen/wettkampf-national/schwimmerabfrage/">DSV Schwimmerabfrage</a>
+                <a href="https://aqua-tracker.pages.dev">PB's Tracker</a>
+            </div>
+            <p class="footer"><img src="assets/simtec_logo.png" class="simtecLogo" alt="simtec logo"> ©️ 2026 Kolja Haupt | simtecapplications@web.de </p>
+        </section>
+
+        <!-- Form -->
+        <section id="screen-input" class="screen">
+            <div class="window">
+                <div class="titlebar">Enter data</div>
+                <h2 id="eventTitle">Submit</h2>
+                <p class="muted" id="eventMeta"></p>
+
+                <form id="splitForm"></form>
+
+                <div class="row">
+                    <button type="button" class="btn" id="backBtn">Back</button>
+                    <button type="submit" form="splitForm" class="btn">Analyse</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section id="screen-result" class="screen">
+            <div class="window">
+                <div class="titlebar">Results</div>
+                <h2 id="nameFieldLabel">Swimmer: </h2>
+                <p class="muted" id="resultMeta"></p>
+
+                <div id="resultSummary"></div>
+
+                <div class="divider"></div>
+
+                <div class="stack">
+                    <div>
+                        <div class="section-title">Splits</div>
+                        <div class="table-wrap">
+                            <table id="sectionTable"></table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title">Overall data</div>
+                        <div class="table-wrap">
+                            <table id="summaryTable"></table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title">Raw data</div>
+                        <div class="table-wrap">
+                            <table id="rawTable"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn" id="restartBtn" style="margin-top:14px;">New analysis</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="script/mainScript.js"></script>
+
 </body>
+
 </html>
