@@ -1,3 +1,9 @@
+let lastAnalysisResult = null;
+let lastAnalysisTemplate = null;
+
+//chart:
+let speedChart = null;
+
 // ------------------------------------------------------------
 // TEMPLATES
 // ------------------------------------------------------------
@@ -100,7 +106,7 @@ const EVENT_TEMPLATES = {
         description: "Input at every 100 m split."
     },
 
-    // Individual Medley
+    // Im
     "100IM": {
         id: "100IM",
         name: "100m IM",
@@ -221,7 +227,6 @@ function parseTime(timeString) {
 
     timeString = timeString.trim().replace(",", ".");
 
-    // Minutenformat (z.B. 1:06.97)
     if (timeString.includes(":")) {
         const parts = timeString.split(":");
 
@@ -235,8 +240,76 @@ function parseTime(timeString) {
         return minutes * 60 + seconds;
     }
 
-    // Nur Sekunden (z.B. 29.53)
     return Number(timeString);
+}
+
+// EQUAL SPLIT DISTRIBUTION
+function createSplitDistribution(result) {
+
+    const totalDistance = result.totalDistance;
+    const totalTime = result.totalTime;
+
+    let splitDistance;
+
+
+    if (totalDistance <= 50) {
+        splitDistance = 25;
+    } else {
+        splitDistance = 50;
+    }
+
+
+    const splitCount = totalDistance / splitDistance;
+
+
+    const rows = [];
+
+
+    for (let i = 0; i < splitCount; i++) {
+
+        const start = i * splitDistance;
+        const end = (i + 1) * splitDistance;
+
+        let startTime = 0;
+        let endTime = 0;
+
+
+        if (start === 0) {
+            startTime = 0;
+        } else {
+            const startCheckpoint = result.checkpointData.find(
+                cp => cp.distance === start
+            );
+
+            startTime = startCheckpoint?.time || 0;
+        }
+
+
+        const endCheckpoint = result.checkpointData.find(
+            cp => cp.distance === end
+        );
+
+
+        endTime = endCheckpoint?.time || 0;
+
+
+        const splitTime = endTime - startTime;
+
+
+        const percentage =
+            (splitTime / totalTime) * 100;
+
+
+        rows.push([
+            `${start}-${end} m`,
+            `${formatTime(splitTime)} s`,
+            `${percentage.toFixed(2)} %`
+        ]);
+
+    }
+
+    return rows;
+
 }
 // ------------------------------------------------------------
 // STARTING SITE
@@ -273,6 +346,28 @@ function renderInputForm(template) {
         const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
         return local.toISOString().slice(0, 10);
     }
+
+    const poolField = document.createElement("div");
+    poolField.className = "field";
+
+    const poolLabel = document.createElement("label");
+    poolLabel.textContent = "Length";
+
+    const poolSelect = document.createElement("select");
+    poolSelect.id = "poolType";
+    poolSelect.name = "poolType";
+
+    ["SCM", "LCM"].forEach(type => {
+        const option = document.createElement("option");
+        option.value = type;
+        option.textContent = type;
+        poolSelect.appendChild(option);
+    });
+
+    poolField.appendChild(poolLabel);
+    poolField.appendChild(poolSelect);
+
+    splitForm.appendChild(poolField);
 
     const swimmerField = document.createElement("div");
     swimmerField.className = "field";
@@ -365,17 +460,18 @@ function renderInputForm(template) {
 // ANALYSIS
 // ------------------------------------------------------------
 function analyzeRace(template, formData) {
+    const poolType = formData.get("poolType");
     const swimmerName = (formData.get("swimmerName") || "").trim();
     const raceDate = (formData.get("raceDate") || "").trim();
 
     const checkpointData = template.checkpoints.map(cp => {
         const raw = formData.get(`cp_${cp}`);
-    
+
         const time =
             raw === "" || raw === null
                 ? null
                 : parseTime(raw);
-    
+
         return {
             distance: cp,
             time
@@ -414,6 +510,7 @@ function analyzeRace(template, formData) {
     const slowestSection = sections.reduce((worst, current) => current.speed < worst.speed ? current : worst, sections[0]);
 
     return {
+        poolType,
         swimmerName,
         raceDate,
         totalDistance,
@@ -439,14 +536,151 @@ function buildTable(headers, rows) {
     return `${thead}${tbody}`;
 }
 
+// CREATE SPEED CHART
+function renderSpeedChart(result) {
+
+    const ctx = document
+        .getElementById("speedChart")
+        .getContext("2d");
+
+    let currentDistance = 0;
+
+    const splitPoints = result.sections.map(section => {
+
+        currentDistance += section.distance;
+
+        return {
+            x: currentDistance,
+            y: section.speed
+        };
+
+    });
+
+
+    const points = [
+
+        {
+            x: 0,
+            y: result.startSpeed
+        },
+
+        ...splitPoints
+
+    ];
+
+
+    if (speedChart) {
+        speedChart.destroy();
+    }
+
+
+    speedChart = new Chart(ctx, {
+
+        type: "line",
+
+        data: {
+
+            datasets: [{
+
+                label: "Speed (m/s)",
+
+                data: points,
+
+                tension: 0.2,
+
+                pointRadius: 4
+
+            }]
+
+        },
+
+
+        options: {
+
+            responsive: true,
+
+
+            scales: {
+
+                x: {
+
+                    type: "linear",
+
+                    min: 0,
+
+                    max: result.totalDistance,
+
+
+                    title: {
+
+                        display: true,
+
+                        text: "Distance (m)"
+
+                    },
+
+
+                    ticks: {
+
+                        callback: function (value) {
+
+                            const validDistances = points.map(point => point.x);
+
+                            if (validDistances.includes(value)) {
+                                return value + " m";
+                            }
+
+                            return "";
+
+                        }
+
+                    }
+
+                },
+
+
+                y: {
+
+                    title: {
+
+                        display: true,
+
+                        text: "Speed (m/s)"
+
+                    }
+
+                }
+
+            },
+
+
+            plugins: {
+
+                legend: {
+
+                    display: true
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
 // ------------------------------------------------------------
 // SHOW RESULTS
 // ------------------------------------------------------------
 function renderResults(template, result) {
-    const dateText = formatDateEuropean(result.raceDate);
-    document.getElementById("nameFieldLabel").textContent = `Swimmer: ${result.swimmerName || "Unknown"}`;
+    lastAnalysisResult = result;
+    lastAnalysisTemplate = template;
 
-    document.getElementById("resultMeta").textContent = `${template.name} - ${dateText} | Analysis based on entered data.`;
+    const dateText = formatDateEuropean(result.raceDate);
+    document.getElementById("nameFieldLabel").textContent = `Athlete: ${result.swimmerName || "Unknown"}`;
+
+    document.getElementById("resultMeta").textContent = `${template.name} • ${result.poolType} • ${dateText}`;
 
     const summaryText = sectionComparisonText(result.speedLossPercent);
     document.getElementById("resultSummary").innerHTML = `
@@ -463,10 +697,12 @@ function renderResults(template, result) {
             </div>
           `;
 
+    renderSpeedChart(result);
+
     const sectionRows = result.sections.map(section => [
         section.label,
         `${section.distance.toFixed(0)} m`,
-        formatTime(section.time),
+        `${formatTime(section.time)} s`,
         formatSpeed(section.speed)
     ]);
 
@@ -476,6 +712,7 @@ function renderResults(template, result) {
     );
 
     const summaryRows = [
+        ["Course", result.poolType],
         ["Total distance", `${result.totalDistance.toFixed(0)} m`],
         ["End time", formatTime(result.totalTime)],
         ["v avg.", formatSpeed(result.avgSpeed)],
@@ -488,6 +725,20 @@ function renderResults(template, result) {
         ["Index", "Value"],
         summaryRows
     );
+
+
+    const splitDistribution = createSplitDistribution(result);
+
+    if (splitDistribution.length > 0) {
+
+        document.getElementById("splitDistributionContainer").style.display = "block";
+
+        document.getElementById("splitDistributionTable").innerHTML = buildTable(
+            ["Distance", "Time", "Percentage"],
+            splitDistribution
+        );
+
+    }
 
     const rawRows = result.checkpointData
         .filter(cp => cp.time !== null && !Number.isNaN(cp.time) && cp.time > 0)
@@ -505,6 +756,331 @@ function renderResults(template, result) {
         ["Input", "Value"],
         rawRows
     );
+}
+
+// ------------------------------------------------------------
+// SAVE RESULTS
+// ------------------------------------------------------------
+function createPDF() {
+
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF();
+
+    let y = 20;
+
+    function addPDFTitle(text) {
+
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.setFontSize(13);
+        doc.text(text, 14, y);
+
+        y += 6;
+
+    }
+
+    if (!lastAnalysisResult || !lastAnalysisTemplate) {
+        alert("No analysis available.");
+        return;
+    }
+
+    const result = lastAnalysisResult;
+    const template = lastAnalysisTemplate;
+
+    doc.setFontSize(18);
+    doc.text("RaceAnalysis | Results", 14, y);
+
+    y += 12;
+    doc.setFontSize(12);
+
+    const dateText = formatDateEuropean(result.raceDate);
+
+    doc.setFontSize(9);
+    doc.text("RaceAnalysis v1.2", 196, 12, {
+        align: "right"
+    });
+
+    doc.setFontSize(12);
+
+    const headerInfo = [
+        `Athlete: ${result.swimmerName || "Unknown"}`,
+        `Event: ${template.name}`,
+        `Date: ${dateText}`,
+        `Course: ${result.poolType}`
+    ];
+
+
+    headerInfo.forEach(line => {
+        doc.text(line, 14, y);
+        y += 7;
+    });
+
+
+    y += 8;
+
+    // chart
+    const canvas = document.getElementById("speedChart");
+
+    if (canvas) {
+
+        const pdfCanvas = document.createElement("canvas");
+
+        pdfCanvas.width = 1000;
+        pdfCanvas.height = 450;
+
+
+        const pdfCtx = pdfCanvas.getContext("2d");
+
+
+        const pdfChart = new Chart(pdfCtx, {
+
+            type: "line",
+
+            data: speedChart.data,
+
+            options: {
+
+                responsive: false,
+
+                animation: false,
+
+                scales: {
+
+                    x: {
+                        type: "linear",
+                        min: 0,
+                        max: result.totalDistance,
+
+                        title: {
+                            display: true,
+                            text: "Distance (m)"
+                        }
+                    },
+
+                    y: {
+
+                        title: {
+                            display: true,
+                            text: "Speed (m/s)"
+                        }
+
+                    }
+
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: true
+                    }
+
+                }
+
+            }
+
+        });
+
+
+        const chartImage = pdfCanvas.toDataURL("image/png");
+
+
+        pdfChart.destroy();
+
+
+        if (y > 220) {
+            doc.addPage();
+            y = 20;
+        }
+
+        addPDFTitle("Speed profile");
+
+        doc.addImage(
+            chartImage,
+            "PNG",
+            14,
+            y,
+            180,
+            85
+        );
+
+
+        y += 90;
+
+    }
+
+    addPDFTitle("Short overview");
+    const summaryText = sectionComparisonText(result.speedLossPercent);
+    const overviewData = [
+
+        ["End time", formatTime(result.totalTime)],
+
+        ["v avg.", formatSpeed(result.avgSpeed)],
+
+        ["v first seg.", formatSpeed(result.startSpeed)],
+
+        ["v last seg.", formatSpeed(result.lastSpeed)],
+
+        ["Speed loss", `${result.speedLossPercent.toFixed(2)} %`],
+
+        ["Evaluation", summaryText]
+
+    ];
+
+
+    doc.autoTable({
+
+        startY: y,
+
+        head: [
+            ["Index", "Value"]
+        ],
+
+        body: overviewData
+
+    });
+
+
+    y = doc.lastAutoTable.finalY + 10;
+
+    const splitData = result.sections.map(section => [
+
+        section.label,
+
+        `${section.distance.toFixed(0)} m`,
+
+        `${formatTime(section.time)} s`,
+
+        formatSpeed(section.speed)
+
+    ]);
+
+    addPDFTitle("Splits");
+    doc.autoTable({
+
+        startY: y,
+
+        head: [
+            ["Segment", "Distance", "Split", "v"]
+        ],
+
+        body: splitData
+
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+
+
+    const overallData = [
+
+        ["Course", result.poolType],
+
+        ["Total distance", `${result.totalDistance.toFixed(0)} m`],
+
+        ["End time", formatTime(result.totalTime)],
+
+        ["v avg.", formatSpeed(result.avgSpeed)],
+
+        [
+            "v fastest seg.",
+            `${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`
+        ],
+
+        [
+            "v slowest seg.",
+            `${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`
+        ],
+
+        [
+            "Stroke count",
+            result.strokeCount === null ? "---" : String(result.strokeCount)
+        ]
+
+    ];
+
+    addPDFTitle("Overall data");
+    doc.autoTable({
+
+        startY: y,
+
+        head: [
+            ["Index", "Value"]
+        ],
+
+        body: overallData
+
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+
+    const splitDistribution = createSplitDistribution(result);
+
+
+    if (splitDistribution.length > 0) {
+        addPDFTitle("Split Distribution");
+
+        doc.autoTable({
+
+            startY: y,
+
+            head: [
+                [
+                    "Distance",
+                    "Time",
+                    "Percentage"
+                ]
+            ],
+
+            body: splitDistribution
+
+        });
+
+
+        y = doc.lastAutoTable.finalY + 10;
+
+    }
+
+    const rawData = result.checkpointData
+        .filter(cp =>
+            cp.time !== null &&
+            !Number.isNaN(cp.time) &&
+            cp.time > 0
+        )
+        .map(cp => [
+            `${cp.distance} m`,
+            formatTime(cp.time)
+        ]);
+
+    rawData.push([
+        "Stroke count",
+        result.strokeCount === null ||
+            result.strokeCount === ""
+            ? "---"
+            : result.strokeCount
+    ]);
+
+    addPDFTitle("Raw data");
+    doc.autoTable({
+        startY: y,
+        theme: "grid",
+        head: [
+            ["Input", "Value"]
+        ],
+        body: rawData
+    });
+
+
+    const cleanName = (result.swimmerName || "Athlete").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const cleanEvent = (template.name || "Event").replace(/[^a-zA-Z0-9_-]/g, "");
+    const cleanDate = dateText.replace(/\./g, "-");
+
+    const filename = `RA_${cleanName}_${cleanEvent}_${cleanDate}.pdf`;
+
+    doc.save(filename);
+
 }
 
 // ------------------------------------------------------------
@@ -539,6 +1115,12 @@ splitForm.addEventListener("submit", (e) => {
 });
 
 
-
-
 initEventSelect();
+
+document.getElementById("downloadPdf")
+    .addEventListener("click", createPDF);
+
+// service worker
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js");
+}
