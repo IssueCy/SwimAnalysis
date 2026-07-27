@@ -2,10 +2,10 @@
     "name": "Swim Race Analysis",
     "short_name": "RaceAnalysis",
     "description": "Swimming split analysis based on entered data",
-    "start_url": "./index.html",
+    "start_url": "/",
     "display": "standalone",
-    "background_color": "#d9d9d9",
-    "theme_color": "#d9d9d9",
+    "background_color": "#bdbdbd",
+    "theme_color": "#bdbdbd",
     "orientation": "portrait",
     "icons": [
       {

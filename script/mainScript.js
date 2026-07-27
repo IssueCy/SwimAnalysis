@@ -818,7 +818,7 @@ function createPDF() {
     const dateText = formatDateEuropean(result.raceDate);
 
     doc.setFontSize(9);
-    doc.text("RaceAnalysis v1.3", 196, 12, {
+    doc.text("RaceAnalysis v1.3.1", 196, 12, {
         align: "right"
     });
 
@@ -1126,5 +1126,5 @@ document.getElementById("downloadPdf")
 
 // service worker
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js");
+    navigator.serviceWorker.register("/sw.js");
 }
