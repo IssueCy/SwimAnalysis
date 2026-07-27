@@ -1,11 +1,18 @@
-const CACHE = "RaceAnalysis-v1.2";
+const CACHE = "RaceAnalysis-v1.3";
 
 const FILES = [
     "./",
     "./index.html",
     "./manifest.json",
+
     "./css/mainStyles.css",
+
     "./script/mainScript.js",
+
+    "./libs/jspdf.umd.min.js",
+    "./libs/jspdf.plugin.autotable.min.js",
+    "./libs/chart.umd.js",
+
     "./assets/simtec_logo.png",
     "./assets/1570889.png"
 ];
@@ -37,8 +44,16 @@ self.addEventListener("activate", event => {
 
 
 self.addEventListener("fetch", event => {
+
     event.respondWith(
-        fetch(event.request)
-            .catch(() => caches.match(event.request))
+
+        caches.match(event.request)
+            .then(response => {
+
+                return response || fetch(event.request);
+
+            })
+
     );
+
 });

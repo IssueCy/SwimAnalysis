@@ -254,8 +254,10 @@ function createSplitDistribution(result) {
 
     if (totalDistance <= 50) {
         splitDistance = 25;
-    } else {
+    } else if (totalDistance <= 200) {
         splitDistance = 50;
+    } else {
+        splitDistance = 100;
     }
 
 
@@ -302,7 +304,7 @@ function createSplitDistribution(result) {
 
         rows.push([
             `${start}-${end} m`,
-            `${formatTime(splitTime)} s`,
+            `${formatTime(splitTime)}`,
             `${percentage.toFixed(2)} %`
         ]);
 
@@ -454,6 +456,23 @@ function renderInputForm(template) {
     strokeField.appendChild(strokeLabel);
     strokeField.appendChild(strokeInput);
     splitForm.appendChild(strokeField);
+
+    const breathField = document.createElement("div");
+    breathField.className = "field";
+
+    const breathLabel = document.createElement("label");
+    breathLabel.setAttribute("for", "breathCount");
+    breathLabel.textContent = "Breath count (optional)";
+
+    const breathInput = document.createElement("input");
+    breathInput.type = "text";
+    breathInput.id = "breathCount";
+    breathInput.name = "breathCount";
+    breathInput.placeholder = "optional";
+
+    breathField.appendChild(breathLabel);
+    breathField.appendChild(breathInput);
+    splitForm.appendChild(breathField);
 }
 
 // ------------------------------------------------------------
@@ -482,6 +501,8 @@ function analyzeRace(template, formData) {
 
     const strokeCountRaw = formData.get("strokeCount");
     const strokeCount = strokeCountRaw === null || strokeCountRaw === "" ? null : String(strokeCountRaw).trim();
+
+    const breathCount = document.getElementById("breathCount").value || null;
 
     const filledPoints = checkpointData.filter(cp => cp.time !== null && !Number.isNaN(cp.time) && cp.time > 0);
 
@@ -519,6 +540,7 @@ function analyzeRace(template, formData) {
         sections,
         checkpointData,
         strokeCount,
+        breathCount,
         startSpeed,
         lastSpeed,
         speedLossPercent,
@@ -702,7 +724,7 @@ function renderResults(template, result) {
     const sectionRows = result.sections.map(section => [
         section.label,
         `${section.distance.toFixed(0)} m`,
-        `${formatTime(section.time)} s`,
+        `${formatTime(section.time)}`,
         formatSpeed(section.speed)
     ]);
 
@@ -719,6 +741,7 @@ function renderResults(template, result) {
         ["v fastest seg.", `${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`],
         ["v slowest seg.", `${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`],
         ["Stroke count", result.strokeCount === null ? "---" : String(result.strokeCount)],
+        ["Breath count", result.breathCount === null || result.breathCount === "" ? "---" : String(result.breathCount)],
     ];
 
     document.getElementById("summaryTable").innerHTML = buildTable(
@@ -747,15 +770,10 @@ function renderResults(template, result) {
             formatTime(cp.time)
         ]);
 
-    rawRows.push([
-        "Stroke count",
-        result.strokeCount === null || result.strokeCount === "" ? "---" : result.strokeCount
-    ]);
+    rawRows.push(["Stroke count", result.strokeCount === null || result.strokeCount === "" ? "---" : result.strokeCount]);
+    rawRows.push(["Breath count", result.breathCount === null || result.breathCount === "" ? "---" : result.breathCount]);
 
-    document.getElementById("rawTable").innerHTML = buildTable(
-        ["Input", "Value"],
-        rawRows
-    );
+    document.getElementById("rawTable").innerHTML = buildTable(["Input", "Value"], rawRows);
 }
 
 // ------------------------------------------------------------
@@ -800,7 +818,7 @@ function createPDF() {
     const dateText = formatDateEuropean(result.raceDate);
 
     doc.setFontSize(9);
-    doc.text("RaceAnalysis v1.2", 196, 12, {
+    doc.text("RaceAnalysis v1.3", 196, 12, {
         align: "right"
     });
 
@@ -977,27 +995,13 @@ function createPDF() {
     const overallData = [
 
         ["Course", result.poolType],
-
         ["Total distance", `${result.totalDistance.toFixed(0)} m`],
-
         ["End time", formatTime(result.totalTime)],
-
         ["v avg.", formatSpeed(result.avgSpeed)],
-
-        [
-            "v fastest seg.",
-            `${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`
-        ],
-
-        [
-            "v slowest seg.",
-            `${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`
-        ],
-
-        [
-            "Stroke count",
-            result.strokeCount === null ? "---" : String(result.strokeCount)
-        ]
+        ["v fastest seg.",`${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`],
+        ["v slowest seg.",`${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`],
+        ["Stroke count",result.strokeCount === null ? "---" : String(result.strokeCount)],
+        ["Breath count",result.breathCount === null || result.breathCount === ""? "---": String(result.breathCount)]
 
     ];
 
