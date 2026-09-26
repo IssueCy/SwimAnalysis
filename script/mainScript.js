@@ -500,11 +500,19 @@ function analyzeRace(template, formData) {
     console.log(checkpointData);
 
     const strokeCountRaw = formData.get("strokeCount");
-    const strokeCount = strokeCountRaw === null || strokeCountRaw === "" ? null : String(strokeCountRaw).trim();
+    const strokeCount = strokeCountRaw === null || strokeCountRaw === ""
+        ? null
+        : String(strokeCountRaw).trim();
 
-    const breathCount = document.getElementById("breathCount").value || null;
+    const breathCountRaw = formData.get("breathCount");
 
-    const filledPoints = checkpointData.filter(cp => cp.time !== null && !Number.isNaN(cp.time) && cp.time > 0);
+    const breathCount = breathCountRaw === null || breathCountRaw === ""
+        ? null
+        : String(breathCountRaw).trim();
+
+    const filledPoints = checkpointData.filter(
+        cp => cp.time !== null && !Number.isNaN(cp.time) && cp.time > 0
+    );
 
     if (filledPoints.length === 0) {
         throw new Error("Please enter at least one split time.");
@@ -518,6 +526,12 @@ function analyzeRace(template, formData) {
 
     const totalDistance = filledPoints[filledPoints.length - 1].distance;
     const totalTime = filledPoints[filledPoints.length - 1].time;
+
+    // SWOLF = Stroke Count + Time in seconds
+    const swolf = strokeCount !== null && strokeCount !== ""
+        ? Number(strokeCount) + totalTime
+        : null;
+
     const avgSpeed = calcAverageSpeed(totalDistance, totalTime);
 
     const sections = calcSectionTimesFromFilledPoints(filledPoints);
@@ -540,6 +554,7 @@ function analyzeRace(template, formData) {
         sections,
         checkpointData,
         strokeCount,
+        swolf,
         breathCount,
         startSpeed,
         lastSpeed,
@@ -741,6 +756,7 @@ function renderResults(template, result) {
         ["v fastest seg.", `${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`],
         ["v slowest seg.", `${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`],
         ["Stroke count", result.strokeCount === null ? "---" : String(result.strokeCount)],
+        ["SWOLF", result.strokeCount === null || result.strokeCount === "" ? "---" : String(result.swolf.toFixed(1))],
         ["Breath count", result.breathCount === null || result.breathCount === "" ? "---" : String(result.breathCount)],
     ];
 
@@ -998,10 +1014,11 @@ function createPDF() {
         ["Total distance", `${result.totalDistance.toFixed(0)} m`],
         ["End time", formatTime(result.totalTime)],
         ["v avg.", formatSpeed(result.avgSpeed)],
-        ["v fastest seg.",`${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`],
-        ["v slowest seg.",`${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`],
-        ["Stroke count",result.strokeCount === null ? "---" : String(result.strokeCount)],
-        ["Breath count",result.breathCount === null || result.breathCount === ""? "---": String(result.breathCount)]
+        ["v fastest seg.", `${result.fastestSection.label} (${formatSpeed(result.fastestSection.speed)})`],
+        ["v slowest seg.", `${result.slowestSection.label} (${formatSpeed(result.slowestSection.speed)})`],
+        ["Stroke count", result.strokeCount === null ? "---" : String(result.strokeCount)],
+        ["SWOLF", result.strokeCount === null || result.strokeCount === "" ? "---" : String(result.swolf.toFixed(1))],
+        ["Breath count", result.breathCount === null || result.breathCount === "" ? "---" : String(result.breathCount)]
 
     ];
 
@@ -1064,6 +1081,14 @@ function createPDF() {
             result.strokeCount === ""
             ? "---"
             : result.strokeCount
+    ]);
+
+    rawData.push([
+        "Breath count",
+        result.breathCount === null ||
+        result.breathCount === ""
+            ? "---"
+            : result.breathCount
     ]);
 
     addPDFTitle("Raw data");
